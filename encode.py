@@ -56,8 +56,7 @@ class FileSize:  # Gets the File Size
 # FileSize('rec.py')
 
 # Encode Menu
-def Encode(option, import_section, data, output):
-    loop = int(eval(_input % " [-] Encode Count : "))
+def Encode(option, import_section, data, output, loop):
     if option == 1:
         xx = "mar(data.encode('utf8'))[::-1]"
         heading = "_ = lambda __ : __import__('marshal').loads(__[::-1]);"
@@ -117,7 +116,7 @@ def Encode(option, import_section, data, output):
 
 
 # Special Encode
-def SEncode(data, import_section, output):
+def SEncode(import_section, data, output):
     for x in range(5):
         method = repr(b64(zlb(mar(data.encode('utf8'))))[::-1])
         data = "exec(__import__('marshal').loads(__import__('zlib').decompress(__import__('base64').b64decode(%s[::-1]))))" % method
@@ -148,37 +147,66 @@ def MainMenu():
             if option == 17:
                 sys.exit("\n Thanks For Using this Tool")
             #os.system('clear')  # os.system('cls')
-            banner()
+            #banner()
         else:
             sys.exit('\n Invalid Option !')
-        try:
-            import_section = True
-            import_part = []
-            code_part = []
-            file = eval(_input % " [-] File Name : ")
-            with open(file, 'r', encoding='utf8') as f:
-                data = f.readlines()
-                if '# @END OF IMPORTS@\n' in data:
-                    # separate the import and the code for pyinstaller to work successfully
-                    for line in data:
-                        if line.strip() == '# @END OF IMPORTS@':
-                            import_section = False
-                            continue
-                        if import_section:
-                            import_part.append(line)
-                        else:
-                            code_part.append(line)
-        except IOError:
-            sys.exit("\n File Not Found!")
 
-        output = file.lower().replace('.py', '') + '_enc.py'
-        if option == 16:
-            SEncode(''.join(import_part), ''.join(code_part), output)
+        try:
+            path_or_file = int(eval(_input % " [-] Obfuscate one file [0] or all files in directory [1]? : "))
+            if path_or_file not in [0, 1]:
+                path_or_file = 0
+        except ValueError:
+            sys.exit("\n Invalid Value !")
+
+        files_to_obfuscate = []
+        if path_or_file == 0:
+            file = eval(_input % f" [-] File name : ")
+            files_to_obfuscate.append(file)
         else:
-            Encode(option, ''.join(import_part), ''.join(code_part), output)
-        print("\n [-] Successfully Encrypted %s" % file)
-        print(" [-] Saved as %s" % output)
-        FileSize(output)
+            try:
+                path = eval(_input % f" [-] Path to files : ")
+                for filename in os.listdir(path):
+                    filepath = os.path.join(path, filename)
+                    if os.path.isfile(filepath) and filename.endswith('.py'):
+                        files_to_obfuscate.append(filepath)
+            except:
+                sys.exit("\n Invalid path !")
+
+        if option != 16:
+            try:
+                loop = int(eval(_input % " [-] Encode Count : "))
+            except ValueError:
+                sys.exit("\n Invalid Encode Count !")
+
+        for file in files_to_obfuscate:
+            try:
+                import_section = True
+                import_part = []
+                code_part = []
+                with open(file, 'r', encoding='utf8') as f:
+                    data = f.readlines()
+                    end_imports_str = '# @END OF IMPORTS@'
+                    if any(line.strip() == end_imports_str for line in data):
+                        # separate the import and the code for pyinstaller to work successfully
+                        for line in data:
+                            if line.strip() == end_imports_str:
+                                import_section = False
+                                continue
+                            if import_section:
+                                import_part.append(line)
+                            else:
+                                code_part.append(line)
+            except IOError:
+                sys.exit("\n File Not Found!")
+
+            output = file.lower().replace('.py', '') + '_enc.py'
+            if option == 16:
+                SEncode(''.join(import_part), ''.join(code_part), output)
+            else:
+                Encode(option, ''.join(import_part), ''.join(code_part), output, loop)
+            print("\n [-] Successfully Encrypted %s" % file)
+            print(" [-] Saved as %s" % output)
+            FileSize(output)
     except KeyboardInterrupt:
         time.sleep(1)
         sys.exit()
