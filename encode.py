@@ -152,14 +152,14 @@ def MainMenu():
             sys.exit('\n Invalid Option !')
 
         try:
-            path_or_file = int(eval(_input % " [-] Obfuscate one file [0] or all files in directory [1]? : "))
-            if path_or_file not in [0, 1]:
-                path_or_file = 0
+            path_or_file = int(eval(_input % " [-] Obfuscate one file [1] or all files in directory [2]? : "))
+            if path_or_file not in [1, 2]:
+                path_or_file = 1
         except ValueError:
             sys.exit("\n Invalid Value !")
 
         files_to_obfuscate = []
-        if path_or_file == 0:
+        if path_or_file == 1:
             file = eval(_input % f" [-] File name : ")
             files_to_obfuscate.append(file)
         else:
@@ -196,6 +196,8 @@ def MainMenu():
                                 import_part.append(line)
                             else:
                                 code_part.append(line)
+                    else:
+                        code_part = data
             except IOError:
                 sys.exit("\n File Not Found!")
 
