@@ -28,12 +28,11 @@ b16 = lambda in_: base64.b16encode(in_)
 b32 = lambda in_: base64.b32encode(in_)
 b64 = lambda in_: base64.b64encode(in_)
 mar = lambda in_: marshal.dumps(compile(in_, '<x>', 'exec'))
-note = "\x23\x20\x4f\x62\x66\x75\x73\x63\x61\x74\x65\x64\x20\x77\x69\x74\x68\x20\x50\x79\x4f\x62\x66\x75\x73\x63\x61\x74\x65\x0a\x23\x20\x68\x74\x74\x70\x73\x3a\x2f\x2f\x77\x77\x77\x2e\x67\x69\x74\x68\x75\x62\x2e\x63\x6f\x6d\x2f\x68\x74\x72\x2d\x74\x65\x63\x68\x0a\x23\x20\x54\x69\x6d\x65\x20\x3a\x20%s\n\x23\x20\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x2d\x0a" % time.ctime()
 
 
 def banner():  # Program Banner
     print(
-        ' ╔═════════════════════════════════╗\n ║          PyObfuscate            ║\n ║  Simple Python Code Obfuscator  ║\n ║  Author : Tahmid Rayat          ║\n ║  Github : Github.com/HTR-TECH   ║\n ╚═════════════════════════════════╝\n')
+        ' ╔═════════════════════════════════╗\n ║  AutoPyObfuscate                ║\n ║  Auto Python Obfuscator         ║\n ║  Author : Alexey Krupin         ║\n ╚═════════════════════════════════╝\n')
 
 
 def menu():  # Program Menu
@@ -57,7 +56,7 @@ class FileSize:  # Gets the File Size
 # FileSize('rec.py')
 
 # Encode Menu
-def Encode(option, data, output):
+def Encode(option, import_section, data, output):
     loop = int(eval(_input % " [-] Encode Count : "))
     if option == 1:
         xx = "mar(data.encode('utf8'))[::-1]"
@@ -113,12 +112,12 @@ def Encode(option, data, output):
         except TypeError as s:
             sys.exit(" TypeError : " + str(s))
     with open(output, 'w') as f:
-        f.write(note + heading + data)
+        f.write(import_section + heading + data)
         f.close()
 
 
 # Special Encode
-def SEncode(data, output):
+def SEncode(data, import_section, output):
     for x in range(5):
         method = repr(b64(zlb(mar(data.encode('utf8'))))[::-1])
         data = "exec(__import__('marshal').loads(__import__('zlib').decompress(__import__('base64').b64decode(%s[::-1]))))" % method
@@ -127,7 +126,8 @@ def SEncode(data, output):
         z.append(ord(i))
     sata = "_ = %s\nexec(''.join(chr(__) for __ in _))" % z
     with open(output, 'w') as f:
-        f.write(note + "exec(str(chr(35)%s));" % '+chr(1)' * 10000)
+        f.write(import_section)
+        f.write("exec(str(chr(35)%s));" % '+chr(1)' * 10000)
         f.write(sata)
         f.close()
     py_compile.compile(output, output)
@@ -136,7 +136,7 @@ def SEncode(data, output):
 # Main Menu
 def MainMenu():
     try:
-        os.system('clear')  # os.system('cls')
+        #os.system('clear')  # os.system('cls')
         banner()
         menu()
         try:
@@ -147,21 +147,35 @@ def MainMenu():
         if option > 0 and option <= 17:
             if option == 17:
                 sys.exit("\n Thanks For Using this Tool")
-            os.system('clear')  # os.system('cls')
+            #os.system('clear')  # os.system('cls')
             banner()
         else:
             sys.exit('\n Invalid Option !')
         try:
+            import_section = True
+            import_part = []
+            code_part = []
             file = eval(_input % " [-] File Name : ")
-            data = open(file, encoding='utf8').read()
+            with open(file, 'r', encoding='utf8') as f:
+                data = f.readlines()
+                if '# @END OF IMPORTS@\n' in data:
+                    # separate the import and the code for pyinstaller to work successfully
+                    for line in data:
+                        if line.strip() == '# @END OF IMPORTS@':
+                            import_section = False
+                            continue
+                        if import_section:
+                            import_part.append(line)
+                        else:
+                            code_part.append(line)
         except IOError:
             sys.exit("\n File Not Found!")
 
         output = file.lower().replace('.py', '') + '_enc.py'
         if option == 16:
-            SEncode(data, output)
+            SEncode(''.join(import_part), ''.join(code_part), output)
         else:
-            Encode(option, data, output)
+            Encode(option, ''.join(import_part), ''.join(code_part), output)
         print("\n [-] Successfully Encrypted %s" % file)
         print(" [-] Saved as %s" % output)
         FileSize(output)
