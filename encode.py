@@ -164,11 +164,19 @@ def MainMenu():
             files_to_obfuscate.append(file)
         else:
             try:
+                # path = eval(_input % f" [-] Path to files : ")
+                # for filename in os.listdir(path):
+                #     filepath = os.path.join(path, filename)
+                #     if os.path.isfile(filepath) and filename.endswith('.py'):
+                #         files_to_obfuscate.append(filepath)
+
+                # Сохраняет структуру каталогов
                 path = eval(_input % f" [-] Path to files : ")
-                for filename in os.listdir(path):
-                    filepath = os.path.join(path, filename)
-                    if os.path.isfile(filepath) and filename.endswith('.py'):
-                        files_to_obfuscate.append(filepath)
+                for root, dirs, filenames in os.walk(path):
+                    for filename in filenames:
+                        filepath = os.path.join(root, filename)
+                        if filename.endswith('.py'):
+                            files_to_obfuscate.append(filepath)
             except:
                 sys.exit("\n Invalid path !")
 
@@ -177,6 +185,8 @@ def MainMenu():
                 loop = int(eval(_input % " [-] Encode Count : "))
             except ValueError:
                 sys.exit("\n Invalid Encode Count !")
+
+        save_old_files = int(eval(_input % " [-] Save old files [1] or not [0] ? : "))
 
         for file in files_to_obfuscate:
             try:
@@ -201,7 +211,10 @@ def MainMenu():
             except IOError:
                 sys.exit("\n File Not Found!")
 
-            output = file.lower().replace('.py', '') + '_enc.py'
+            if save_old_files == 1:
+                output = file.lower().replace('.py', '') + '_enc.py'
+            else:
+                output = file.lower()
             if option == 16:
                 SEncode(''.join(import_part), ''.join(code_part), output)
             else:
