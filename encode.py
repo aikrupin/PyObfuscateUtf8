@@ -222,6 +222,7 @@ def MainMenu():
             print("\n [-] Successfully Encrypted %s" % file)
             print(" [-] Saved as %s" % output)
             FileSize(output)
+        input("Нажмите Enter для выхода...")
     except KeyboardInterrupt:
         time.sleep(1)
         sys.exit()
